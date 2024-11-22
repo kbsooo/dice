@@ -1,67 +1,177 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
         body {
             font-family: Arial, sans-serif;
-            max-width: 800px;
-            margin: 20px auto;
-            padding: 20px;
+            margin: 0;
+            padding: 15px;
             background-color: #f0f0f0;
+            min-height: 100vh;
         }
+
         .container {
             background-color: white;
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            max-width: 600px;
+            margin: 0 auto;
+            width: 100%;
         }
+
+        h1 {
+            font-size: 1.8rem;
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 1.5rem;
+            }
+        }
+
         .dice-setup {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(2, 1fr);
             gap: 10px;
             margin-bottom: 20px;
         }
-        .face-input {
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
+
+        @media (min-width: 480px) {
+            .dice-setup {
+                grid-template-columns: repeat(3, 1fr);
+            }
         }
+
+        .face-input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .face-input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
         .button {
             background-color: #4CAF50;
             color: white;
-            padding: 10px 20px;
+            padding: 15px 20px;
             border: none;
-            border-radius: 4px;
+            border-radius: 8px;
             cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.3s;
+            font-size: 18px;
+            transition: background-color 0.3s, transform 0.1s;
+            width: 100%;
+            margin-bottom: 20px;
+            touch-action: manipulation;
         }
+
         .button:hover {
             background-color: #45a049;
         }
+
+        .button:active {
+            transform: scale(0.98);
+        }
+
         .result {
             margin-top: 20px;
-            padding: 20px;
-            font-size: 24px;
+            padding: 15px;
             text-align: center;
             border: 2px solid #4CAF50;
-            border-radius: 4px;
+            border-radius: 8px;
             background-color: #fff;
         }
+
         .dice {
-            font-size: 32px;
-            margin: 20px 0;
-            padding: 20px;
+            font-size: 40px;
+            margin: 20px auto;
+            padding: 30px;
             border: 3px solid #4CAF50;
-            border-radius: 10px;
+            border-radius: 15px;
             display: inline-block;
-            min-width: 100px;
+            min-width: 120px;
             text-align: center;
             animation: roll 0.5s ease-out;
+            background-color: #f8f8f8;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
+
+        @media (max-width: 480px) {
+            .dice {
+                font-size: 32px;
+                padding: 20px;
+                min-width: 100px;
+            }
+        }
+
         @keyframes roll {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% { 
+                transform: rotate(0deg) scale(1);
+            }
+            50% {
+                transform: rotate(180deg) scale(1.2);
+            }
+            100% { 
+                transform: rotate(360deg) scale(1);
+            }
+        }
+
+        .result-text {
+            margin-top: 10px;
+            font-size: 1.1rem;
+            color: #666;
+        }
+
+        /* 터치 디바이스를 위한 최적화 */
+        @media (hover: none) {
+            .button:hover {
+                background-color: #4CAF50;
+            }
+        }
+
+        /* 다크 모드 지원 */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #1a1a1a;
+            }
+            .container {
+                background-color: #2d2d2d;
+            }
+            h1 {
+                color: #fff;
+            }
+            .face-input {
+                background-color: #3d3d3d;
+                border-color: #4d4d4d;
+                color: #fff;
+            }
+            .result {
+                background-color: #2d2d2d;
+                border-color: #4CAF50;
+            }
+            .dice {
+                background-color: #3d3d3d;
+                color: #fff;
+            }
+            .result-text {
+                color: #ccc;
+            }
         }
     </style>
 </head>
@@ -78,25 +188,35 @@
             <input type="text" class="face-input" placeholder="면 6" value="6">
         </div>
 
-        <button class="button" onclick="rollDice()">주사위 던지기</button>
+        <button class="button" onclick="rollDice()" id="rollButton">주사위 던지기</button>
 
         <div id="result" class="result">
             <div id="dice" class="dice">?</div>
-            <p>주사위를 던져보세요!</p>
+            <p class="result-text">주사위를 던져보세요!</p>
         </div>
     </div>
 
     <script>
+        let isRolling = false;
+
         function rollDice() {
+            // 연속 클릭 방지
+            if (isRolling) return;
+            
             // 모든 입력값 가져오기
             const faces = Array.from(document.getElementsByClassName('face-input'))
                 .map(input => input.value.trim())
                 .filter(value => value !== ''); // 빈 값 제거
 
             if (faces.length === 0) {
-                alert('최소한 하나의 면에 값을 입력해주세요!');
+                alert('최소한 하나의 면에 원하는 텍스트를 입력해주세요!');
                 return;
             }
+
+            isRolling = true;
+            const button = document.getElementById('rollButton');
+            button.style.opacity = '0.7';
+            button.style.cursor = 'wait';
 
             // 주사위 애니메이션을 위한 요소 가져오기
             const diceElement = document.getElementById('dice');
@@ -113,7 +233,10 @@
             // 결과 표시
             setTimeout(() => {
                 diceElement.textContent = result;
-            }, 100);
+                isRolling = false;
+                button.style.opacity = '1';
+                button.style.cursor = 'pointer';
+            }, 500);
         }
 
         // 엔터 키로도 주사위를 던질 수 있게 하기
@@ -121,6 +244,21 @@
             if (e.key === 'Enter') {
                 rollDice();
             }
+        });
+
+        // 모바일 디바이스에서의 터치 이벤트 최적화
+        const button = document.getElementById('rollButton');
+        button.addEventListener('touchstart', function(e) {
+            e.preventDefault();
+            rollDice();
+        });
+
+        // 입력 필드 포커스 시 모바일에서 화면 확대 방지
+        const inputs = document.querySelectorAll('.face-input');
+        inputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                input.style.fontSize = '16px';
+            });
         });
     </script>
 </body>
