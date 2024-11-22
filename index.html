@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .dice-setup {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .face-input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            font-size: 24px;
+            text-align: center;
+            border: 2px solid #4CAF50;
+            border-radius: 4px;
+            background-color: #fff;
+        }
+        .dice {
+            font-size: 32px;
+            margin: 20px 0;
+            padding: 20px;
+            border: 3px solid #4CAF50;
+            border-radius: 10px;
+            display: inline-block;
+            min-width: 100px;
+            text-align: center;
+            animation: roll 0.5s ease-out;
+        }
+        @keyframes roll {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>DICE</h1>
+        
+        <div class="dice-setup">
+            <input type="text" class="face-input" placeholder="면 1" value="1">
+            <input type="text" class="face-input" placeholder="면 2" value="2">
+            <input type="text" class="face-input" placeholder="면 3" value="3">
+            <input type="text" class="face-input" placeholder="면 4" value="4">
+            <input type="text" class="face-input" placeholder="면 5" value="5">
+            <input type="text" class="face-input" placeholder="면 6" value="6">
+        </div>
+
+        <button class="button" onclick="rollDice()">주사위 던지기</button>
+
+        <div id="result" class="result">
+            <div id="dice" class="dice">?</div>
+            <p>주사위를 던져보세요!</p>
+        </div>
+    </div>
+
+    <script>
+        function rollDice() {
+            // 모든 입력값 가져오기
+            const faces = Array.from(document.getElementsByClassName('face-input'))
+                .map(input => input.value.trim())
+                .filter(value => value !== ''); // 빈 값 제거
+
+            if (faces.length === 0) {
+                alert('최소한 하나의 면에 값을 입력해주세요!');
+                return;
+            }
+
+            // 주사위 애니메이션을 위한 요소 가져오기
+            const diceElement = document.getElementById('dice');
+            
+            // 주사위 초기화 (애니메이션 재시작을 위해)
+            diceElement.style.animation = 'none';
+            diceElement.offsetHeight; // reflow 강제
+            diceElement.style.animation = 'roll 0.5s ease-out';
+
+            // 랜덤한 면 선택
+            const randomIndex = Math.floor(Math.random() * faces.length);
+            const result = faces[randomIndex];
+
+            // 결과 표시
+            setTimeout(() => {
+                diceElement.textContent = result;
+            }, 100);
+        }
+
+        // 엔터 키로도 주사위를 던질 수 있게 하기
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                rollDice();
+            }
+        });
+    </script>
+</body>
+</html>
